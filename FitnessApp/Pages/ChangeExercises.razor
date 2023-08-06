@@ -1,0 +1,69 @@
+﻿@page "/change"
+@using Newtonsoft.Json;
+<MudGrid Spacing="2" Class="mt-5">
+         <MudItem xs="3">
+    <MudPaper Width="200px">
+            <MudList Clickable="true">
+                    @foreach (var x in exercises)
+                    {
+                        <MudDivider />
+                        <MudListItem Text="@x.Exercise_Name"/>
+                    }
+                
+                
+              
+            </MudList>
+            </MudPaper>
+        <div Class="pt-4 pl-16">
+            <MudFab  @onclick="addExerciseType" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small"  />
+        </div>
+        </MudItem>
+        <MudItem xs="9">
+            <MudTextField @bind-Value="TextValue" Label="Name" Variant="Variant.Outlined"></MudTextField>
+        
+            <MudAutocomplete T="string" Label="Übung" @bind-Value="TextValue2" SearchFunc="@Search1" Variant="Variant.Outlined" ResetValueOnEmptyText="true" />
+        
+        </MudItem>
+        </MudGrid>
+
+@code {
+    List<Exercises> exercises;
+    public string TextValue { get; set; }
+    public string TextValue2 { get; set; }
+    public List<string> tmp_list = new List<string> { "Brust", "Beine", "Trizeps", "Bizeps", "Schultern", "Rücken" };
+    protected override void OnInitialized()
+    {
+
+        string jsonData = File.ReadAllText("exercise_type.json");
+
+        exercises = JsonConvert.DeserializeObject<List<Exercises>>(jsonData);
+
+
+    }
+    public void addExerciseType()
+    {
+        exercises.Add(new Exercises { Exercise_Name = TextValue, MuscleGroup = TextValue2 });
+
+        string updatedJson = JsonConvert.SerializeObject(exercises, Formatting.Indented);
+
+        File.WriteAllText("exercise_type.json", updatedJson);
+    }
+    private async Task<IEnumerable<string>> Search1(string value)
+    {
+
+
+
+
+        if (string.IsNullOrEmpty(value))
+        {
+            return tmp_list;
+
+        }
+        else
+        {
+
+            return tmp_list.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        }
+    }
+
+}

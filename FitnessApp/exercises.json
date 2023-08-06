@@ -1,0 +1,116 @@
+[
+  {
+    "ExerciseDone_Id": 1,
+    "Exercise_Name": "Beinpresse",
+    "ExerciseLists": [
+      {
+        "Reps": 8,
+        "Weight": 15
+      },
+      {
+        "Reps": 6,
+        "Weight": 15
+      },
+      {
+        "Reps": 4,
+        "Weight": 20
+      }
+    ]
+  },
+  {
+    "ExerciseDone_Id": 2,
+    "Exercise_Name": "Bankdrücken",
+    "ExerciseLists": [
+      {
+        "Reps": 8,
+        "Weight": 20
+      },
+      {
+        "Reps": 6,
+        "Weight": 20
+      },
+      {
+        "Reps": 6,
+        "Weight": 15
+      }
+    ]
+  },
+  {
+    "ExerciseDone_Id": 3,
+    "Exercise_Name": "Beinpresse",
+    "ExerciseLists": [
+      {
+        "Reps": 8,
+        "Weight": 30
+      }
+    ]
+  },
+  {
+    "ExerciseDone_Id": 4,
+    "Exercise_Name": "Bankdrücken",
+    "ExerciseLists": [
+      {
+        "Reps": 8,
+        "Weight": 20
+      }
+    ]
+  },
+  {
+    "ExerciseDone_Id": 5,
+    "Exercise_Name": "Bankdrücken",
+    "ExerciseLists": [
+      {
+        "Reps": 12,
+        "Weight": 35
+      }
+    ]
+  },
+  {
+    "ExerciseDone_Id": 6,
+    "Exercise_Name": "Bankdrücken",
+    "ExerciseLists": [
+      {
+        "Reps": 8,
+        "Weight": 20
+      },
+      {
+        "Reps": 14,
+        "Weight": 35
+      }
+    ]
+  },
+  {
+    "ExerciseDone_Id": 7,
+    "Exercise_Name": "Curls",
+    "ExerciseLists": [
+      {
+        "Reps": 4,
+        "Weight": 20
+      }
+    ]
+  },
+  {
+    "ExerciseDone_Id": 8,
+    "Exercise_Name": "Beinpresse",
+    "ExerciseLists": [
+      {
+        "Reps": 10,
+        "Weight": 30
+      }
+    ]
+  },
+  {
+    "ExerciseDone_Id": 9,
+    "Exercise_Name": "Bankdrücken",
+    "ExerciseLists": [
+      {
+        "Reps": 16,
+        "Weight": 15
+      },
+      {
+        "Reps": 6,
+        "Weight": 35
+      }
+    ]
+  }
+]

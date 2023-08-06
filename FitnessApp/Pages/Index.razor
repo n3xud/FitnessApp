@@ -1,0 +1,223 @@
+﻿@page "/"
+@using Newtonsoft.Json;
+@inject NavigationManager UriHelper
+
+<MudStack>
+<MudDateRangePicker  DateRangeChanged="DateChanged"     Label="Basic range picker" DateRange="dateRange" />
+
+    <MudAutocomplete T="string" Label="Übung" Value="value" SearchFunc="@Search1" Variant="Variant.Outlined" ValueChanged="ExerciseChanged" ResetValueOnEmptyText="true" />
+
+    <MudPaper Elevation="4" Style="position: relative;">
+        
+    <MudCarousel Class="mud-width-full pt-10" Style="height:800px;" ShowArrows="true" EnableSwipeGesture="true" TData="object" AutoCycle="false">
+        <MudCarouselItem  Transition="Transition.Slide">
+                <div >
+                    <MudOverlay Visible="isVisible" Absolute="true" DarkBackground="true">
+                        <MudText>
+                            no data
+                        </MudText>
+                    </MudOverlay>
+                <MudChart  ChartType="ChartType.Line" ChartSeries="@Series" @bind-SelectedIndex="Index1"  Width="100%" Height="600px"></MudChart>
+               </div>
+    </MudCarouselItem>
+    <MudCarouselItem Transition="Transition.Slide">
+                <div class="d-flex justify-center pt-10">
+                <MudChart ChartType="ChartType.Donut" Width="100%" Height="600px" @bind-SelectedIndex="Index1" InputData="@data" InputLabels="@labels"></MudChart>
+                </div>
+    </MudCarouselItem>
+    
+</MudCarousel>
+</MudPaper>
+</MudStack>
+@code{
+    bool isVisible = true;
+    List<int> tmp_list = new List<int>();
+    List<string> tmp_list2 = new List<string>();
+    private DateRange dateRange = new DateRange(DateTime.Now.Date, DateTime.Now.AddDays(5).Date);
+    public DateTime[] tt;
+    private string value;
+    public int Index1 = -1; 
+    List<Exercises> exercises_type;
+    List<ExerciseDone> exercises;
+    List<Days> day;
+    public double[] data = new double[6];
+    public string[] labels = { "Brust","Beine","Trizeps","Bizeps","Schultern","Rücken" };
+    public List<ChartSeries> Series = new List<ChartSeries>()
+    {
+        new ChartSeries() { Name = "Reps", Data = new double[] {} },
+        new ChartSeries() { Name = "Weight", Data = new double[] {} },
+    };
+    public string[] XAxisLabels = { };
+    protected override void OnInitialized()
+    {
+        string jsonData = File.ReadAllText("exercise_type.json");
+        exercises_type = JsonConvert.DeserializeObject<List<Exercises>>(jsonData);
+
+        try
+        {
+            string jsonData2 = File.ReadAllText("exercises.json");
+            string jsonData3 = File.ReadAllText("days.json");
+            exercises = JsonConvert.DeserializeObject<List<ExerciseDone>>(jsonData2);
+            day = JsonConvert.DeserializeObject<List<Days>>(jsonData3);
+        }
+        catch
+        {
+
+        }
+
+
+
+
+    }
+    public void DateChanged(DateRange range)
+    {
+        dateRange = range;
+        tt = Enumerable.Range(0, 1 + dateRange.End.Value.Subtract(dateRange.Start.Value).Days)
+          .Select(offset => dateRange.Start.Value.AddDays(offset)).ToArray();
+        tmp_list = tt.Select(day1 => day1.Date.Day).ToList();
+        tmp_list2 = tmp_list.ConvertAll(x => x.ToString());
+        XAxisLabels = tmp_list2.ToArray();
+        Array.Clear(data);
+        output();
+    }
+    private async Task<IEnumerable<string>> Search1(string value)
+    {
+        List<string> tmp_list = new List<string>();
+        foreach (var x in exercises_type)
+        {
+
+            tmp_list.Add(x.Exercise_Name);
+        }
+
+
+        if (string.IsNullOrEmpty(value))
+        {
+
+
+            return tmp_list;
+
+
+
+        }
+        else
+        {
+
+            return tmp_list.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        }
+    }
+    public void ExerciseChanged(string Response)
+    {
+        value = Response;
+        output();
+
+    }
+    public void output()
+    {
+        List<double> tmp_list_reps = new List<double>();
+        List<double> weight_day = new List<double>();
+        List<double> tmp_list_weight = new List<double>();
+        TimeSpan timeSpan = dateRange.End.Value - dateRange.Start.Value;
+
+        int totalDays = (int)timeSpan.TotalDays;
+
+
+        totalDays += 1;
+        double[] array = new double[totalDays];
+        double[] array2 = new double[totalDays];
+        try
+        {
+            var days1 = day.Where(n => dateRange.Start.Value <= n.Date && n.Date <= dateRange.End.Value);
+
+
+            int reps_day = 0;
+            foreach (var x in days1)
+            {
+                foreach (var y in x.Exercise_Id)
+                {
+                    var u = exercises.Find(n => n.ExerciseDone_Id == y);
+                    foreach (var t in u.ExerciseLists)
+                    {
+                        switch (exercises_type.Find(x => x.Exercise_Name == u.Exercise_Name).MuscleGroup)
+                        {
+                            case "Brust":
+                                data[0] += 1;
+                                break;
+                            case "Beine":
+                                data[1] += 1;
+                                break;
+                            case "Trizeps":
+                                data[2] += 1;
+                                break;
+                            case "Bizeps":
+                                data[3] += 1;
+                                break;
+                            case "Schultern":
+                                data[4] += 1;
+                                break;
+                            case "Rücken":
+                                data[5] += 1;
+                                break;
+                        }
+                        var z = exercises.Find(n => n.ExerciseDone_Id == y && n.Exercise_Name == value);
+                        if (z != null)
+                        {
+
+
+
+
+
+                            reps_day = reps_day + t.Reps;
+                            weight_day.Add(t.Weight);
+                        }
+                        else
+                        {
+
+                        }
+                    }
+
+
+                }
+
+
+                array[(int)(x.Date - dateRange.Start.Value.Date).TotalDays] = reps_day;
+
+
+                reps_day = 0;
+
+                array2[(int)(x.Date - dateRange.Start.Value.Date).TotalDays] = weight_day.Count > 0 ? weight_day.Average() : 0.0;
+
+
+
+                weight_day.Clear();
+            }
+
+            /* Shit doesnt work
+            * for (int x = 0; x <= totalDays - 1; x++)
+                 {
+
+                 array[x] = x > 0 && x <= totalDays && array[x - 1] > 0 && array[x + 1] > 0 && array[x] == 0.0 ? (array[x - 1] + array[x + 1]) / 2 : array[x];
+                 array2[x] = x > 0 && x <= totalDays && array2[x - 1] > 0 && array2[x + 1] > 0 && array2[x] == 0.0 ? (array2[x - 1] + array2[x + 1]) / 2 : array[x];
+
+             }*/
+
+            Series[0].Data = array;
+            Series[1].Data = array2;
+            if (Series[0].Data.Sum() > 0 || Series[1].Data.Sum() > 0)
+            {
+                isVisible = false;
+            }
+            else
+            {
+                isVisible = true;
+            }
+            StateHasChanged();
+        }
+        catch
+        {
+            
+        }
+
+    }
+
+    
+}

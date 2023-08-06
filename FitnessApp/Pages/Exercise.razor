@@ -1,0 +1,268 @@
+﻿@page "/exercise"
+@using Newtonsoft.Json;
+
+    <MudGrid Spacing="2" Class="mt-5">
+         <MudItem xs="3">
+    <MudDatePicker Style="width:150px;" Label="Datum" Elevation="12" Date="@date" DateChanged="OnDateChange" />
+    <MudPaper Width="200px">
+            <MudList Clickable="true">
+                    @foreach (string x in GlobalValues.Instance.DoneExercises)
+                    {
+                        <MudDivider />
+                        <MudListItem Text="@x"/>
+                    }
+                    
+                
+              
+            </MudList>
+            </MudPaper>
+
+        </MudItem>
+        <MudItem xs="7">
+            
+          
+                
+                    <MudStack Class="pt-1">
+
+                <MudPaper>
+                    <MudAutocomplete T="string" Label="Übung" Value="value" SearchFunc="@Search1" Variant="Variant.Outlined" ValueChanged="OnComboValueChanged" ResetValueOnEmptyText="true"/>
+                </MudPaper>
+                         
+                        
+                    </MudStack>
+            @foreach (var x in GlobalValues.Instance.smallExercises.Select((value, i) => new { i, value }))
+         
+                      {
+<MudGrid Spacing="3" Justify="Justify.Center">
+                    <MudItem Class="pt-9">
+                    <div  class="d-block rounded">@x.i</div>
+                            </MudItem>
+                         <MudItem xs="3">
+                        <MudNumericField Step="2" Value="GlobalValues.Instance.smallExercises[x.i].Reps" ValueChanged="(int newValue)=>{GlobalValues.Instance.smallExercises[x.i].Reps=newValue;}" Label="Wiederholungen" Variant="Variant.Text" Min="0" />
+                </MudItem>
+                <MudItem xs="3">
+                    <MudNumericField Adornment="Adornment.End" AdornmentText="Kg" Step="5" Value="GlobalValues.Instance.smallExercises[x.i].Weight" ValueChanged="(int newValue)=>{GlobalValues.Instance.smallExercises[x.i].Weight=newValue;}" Label="Gewicht" Variant="Variant.Text" Min="0" />
+                </MudItem>
+                <MudItem Class="pt-6 pl-12">
+                        <MudFab @onclick="(()=>{ GlobalValues.Instance.smallExercises.RemoveAt(x.i);})" StartIcon="@Icons.Material.Filled.DeleteOutline" Size="Size.Small" />
+                </MudItem>
+                    </MudGrid>
+            }
+            <div Class="d-flex justify-center pt-4">
+                <MudFab @onclick="addSet" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small" Disabled="@addDisabled" />
+            </div>
+        </MudItem>
+        <MudItem Class="pt-6" xs="1">
+        <MudButton  @onclick="addExerciseDone" Variant="Variant.Filled" Color="Color.Primary">Done</MudButton>
+        </MudItem>
+    </MudGrid>
+
+
+
+@code {
+    DateTime? date = DateTime.Today;
+    List<ExerciseDone> exercise;
+    List<Days> day;
+    List<Exercises> exercise_type;
+    bool addDisabled = true;
+    double test;
+    int j=0;
+    private int dayId = 1;
+    private bool resetValueOnEmptyText;
+    private bool coerceText;
+    private bool coerceValue;
+    private string value;
+    public int Wiederholungen { get; set; }
+    public int Gewicht { get; set; }
+    List<string> tmp_list = new List<string>();
+
+
+    protected override void OnInitialized()
+    {
+
+        GlobalValues.Instance.smallExercises = new List<ExerciseList>();
+        GlobalValues.Instance.DoneExercises = new List<string>();
+        string jsonData = File.ReadAllText("exercise_type.json");
+        exercise_type = JsonConvert.DeserializeObject<List<Exercises>>(jsonData);
+        foreach (var x in exercise_type)
+        {
+            tmp_list.Add(x.Exercise_Name);
+        }
+        if (load()) { exercisesUpdate(); }
+
+
+    }
+    public bool load()
+    {
+        string filePath = "days.json";
+        if (File.Exists(filePath))
+        {
+            string jsonData = File.ReadAllText(filePath);
+            string jsonData1 = File.ReadAllText("exercises.json");
+            day = JsonConvert.DeserializeObject<List<Days>>(jsonData);
+            exercise = JsonConvert.DeserializeObject<List<ExerciseDone>>(jsonData1);
+
+            
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+    public void OnDateChange(DateTime? data)
+    {
+        date = data;
+        exercisesUpdate();
+    }
+    public void exercisesUpdate()
+    {
+
+        try { var x = day.First(s => s.Date == date.Value); 
+
+
+
+
+            if(x!=null){
+                var f = x.Exercise_Id;
+                GlobalValues.Instance.DoneExercises.Clear();
+                foreach (int y in f)
+                {
+                    GlobalValues.Instance.DoneExercises.Add((exercise.First(s => s.ExerciseDone_Id == y)).Exercise_Name);
+                }
+
+            }
+            else
+            {
+                GlobalValues.Instance.DoneExercises.Clear();
+            }
+        }catch
+        {
+            GlobalValues.Instance.DoneExercises.Clear();
+        }
+    }
+    private async Task<IEnumerable<string>> Search1(string value)
+    {
+
+
+
+
+        if (string.IsNullOrEmpty(value)){
+            return tmp_list;
+
+        }else{
+
+            return tmp_list.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+        }
+    }
+    private void OnComboValueChanged(string Response)
+    {
+        value = Response;
+        if (value == null)
+        {
+            addDisabled = true;
+        }
+        else
+        {
+            addDisabled = false;
+        }
+    }
+    private void addExerciseDone()
+    {
+
+
+        string filePath = "days.json";
+        List<Days> DayList;
+        int tmp_x = 0;
+
+        if (File.Exists(filePath))
+        {
+            string jsonData = File.ReadAllText(filePath);
+            day = JsonConvert.DeserializeObject<List<Days>>(jsonData);
+            try { var tmp_day = day.First(s => s.Date == date.Value); 
+                tmp_day.Exercise_Id.Add(tmp_day.Exercise_Id.Last() + 1);
+            }
+            catch (InvalidOperationException)
+            {
+                foreach (var x in day)
+                {
+                    tmp_x = x.Exercise_Id.Count + tmp_x;
+                }
+                day.Add(new Days { Date = date.Value, Exercise_Id = new List<int> { tmp_x + 1 } });
+            }
+
+
+        }
+        else
+        {
+            day = new List<Days>();
+            day.Add(new Days { Date = date.Value, Exercise_Id = new List<int> { 1 } });
+        }
+
+
+
+
+
+
+        string updatedJson = JsonConvert.SerializeObject(day, Formatting.Indented);
+
+
+        File.WriteAllText(filePath, updatedJson);
+
+        addJsonExercise();
+
+        exercisesUpdate();
+        GlobalValues.Instance.smallExercises.Clear();
+    }
+    private void addSet()
+    {
+        GlobalValues.Instance.smallExercises.Add(new ExerciseList());
+    }
+    private void addJsonExercise()
+    {
+        int id;
+        
+        string filePath = "exercises.json";
+        if (File.Exists(filePath))
+        {
+            string jsonData = File.ReadAllText(filePath);
+            exercise = JsonConvert.DeserializeObject<List<ExerciseDone>>(jsonData);
+            id = exercise.Count+1;
+        }
+        else
+        {
+            exercise = new List<ExerciseDone>();
+            id = 1;
+        }
+
+       
+        exercise.Add(new ExerciseDone { ExerciseDone_Id = id, Exercise_Name = value, ExerciseLists = GlobalValues.Instance.smallExercises });
+
+
+        string updatedJson = JsonConvert.SerializeObject(exercise, Formatting.Indented);
+
+
+        File.WriteAllText(filePath, updatedJson);
+
+    }
+    public class GlobalValues
+    {
+        private static GlobalValues instance;
+        public List<ExerciseList> smallExercises { get; set; }
+        public List<string> DoneExercises { get; set; }
+        private GlobalValues()
+        {
+
+        }
+        public static GlobalValues Instance
+        {
+            get
+            {
+                if (instance == null)
+                    instance = new GlobalValues();
+                return instance;
+            }
+        }
+    }
+}
