@@ -112,5 +112,31 @@
         "Weight": 35
       }
     ]
+  },
+  {
+    "ExerciseDone_Id": 10,
+    "Exercise_Name": "Beinpresse",
+    "ExerciseLists": [
+      {
+        "Reps": 0,
+        "Weight": 0
+      },
+      {
+        "Reps": 0,
+        "Weight": 0
+      },
+      {
+        "Reps": 4,
+        "Weight": 15
+      },
+      {
+        "Reps": 4,
+        "Weight": 0
+      },
+      {
+        "Reps": 0,
+        "Weight": 10
+      }
+    ]
   }
 ]
